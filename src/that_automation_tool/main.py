@@ -1,5 +1,6 @@
 import time
 import platform
+import serial
 
 from .communication import Communication
 from .gpio import GPIOHandler
@@ -20,6 +21,8 @@ if __name__ == "__main__":
     gpio_handler.set_output(led2_channel_no)
     gpio_handler.set_input(ldr_channel_no)
 
+    ser = serial.Serial('/dev/ttyACM0')  # open serial port
+
 
     def ldr_on_cb():
         gpio_handler.turn_on(led_channel_no)
@@ -29,15 +32,10 @@ if __name__ == "__main__":
         gpio_handler.turn_off(led_channel_no)
         gpio_handler.turn_on(led2_channel_no)
 
-    def ldr_cb(channel, value):
-        if value:
+
+    while True:
+        lux_value = int(ser.readline())
+        if lux_value < 50:
             ldr_on_cb()
         else:
             ldr_off_cb()
-
-    gpio_handler.enable_callback(ldr_channel_no)
-    gpio_handler.register_callback(ldr_channel_no, ldr_cb)
-
-    while True:
-        time.sleep(5)
-        print("Still alive")
