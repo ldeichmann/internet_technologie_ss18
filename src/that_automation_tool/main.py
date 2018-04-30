@@ -12,7 +12,7 @@ ldr_channel_no = 37
 
 
 if __name__ == "__main__":
-    if platform.machine() == "armv8":
+    if platform.machine() == "armv7l":
         print("This is being executed on the raspi")
     else:
         print("Probably not running on the raspi")
