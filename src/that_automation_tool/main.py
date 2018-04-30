@@ -1,6 +1,5 @@
 import time
 import platform
-import serial
 
 from .communication import Communication
 from .gpio import GPIOHandler
@@ -12,7 +11,7 @@ ldr_channel_no = 37
 
 
 if __name__ == "__main__":
-    if platform.machine() == "armv8":
+    if platform.machine() == "armv7l":
         print("This is being executed on the raspi")
     else:
         print("Probably not running on the raspi")
@@ -20,8 +19,6 @@ if __name__ == "__main__":
     gpio_handler.set_output(led_channel_no)
     gpio_handler.set_output(led2_channel_no)
     gpio_handler.set_input(ldr_channel_no)
-
-    ser = serial.Serial('/dev/ttyACM0')  # open serial port
 
 
     def ldr_on_cb():
@@ -33,9 +30,15 @@ if __name__ == "__main__":
         gpio_handler.turn_on(led2_channel_no)
 
 
-    while True:
-        lux_value = int(ser.readline())
-        if lux_value < 50:
+    def ldr_cb(channel, value):
+        if value:
             ldr_on_cb()
         else:
             ldr_off_cb()
+
+    gpio_handler.enable_callback(ldr_channel_no)
+    gpio_handler.register_callback(ldr_channel_no, ldr_cb)
+
+    while True:
+        time.sleep(5)
+        print("Still alive")
