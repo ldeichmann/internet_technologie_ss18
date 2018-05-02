@@ -1,6 +1,5 @@
 import time
 import platform
-import serial
 import configparser
 import argparse
 import logging
