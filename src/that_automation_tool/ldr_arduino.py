@@ -33,7 +33,7 @@ class LDRArduinoHandler:
             lux_value = int(self.serial.readline())
             if self._mqtt:
                 self._mqtt.publish('/sensornetwork/group3/sensor/brightness', {"brightness": lux_value, "unit": "Lux"})
-            if lux_value < 50:
+            if lux_value < self._ldr_threshold:
                 self.ldr_high()
             else:
                 self.ldr_low()
