@@ -49,10 +49,8 @@ class Communication:
     def _on_message_cb(self, client, userdata, msg):
         # pass on to every callback fitting
         for topic, func in self._subscriptions:
-            # TODO: Properly filter by making wildcard comparisons possible
-            # if msg.topic == topic:
-            #     func(client, userdata, msg)
-            func(client, userdata, msg)
+            if self.is_subscription(topic, msg.topic):
+                func(client, userdata, msg)
 
     def _on_connect_cb(self, client, userdata, flags, rc):
         # resubscribe to all topics when reconnecting
@@ -80,3 +78,22 @@ class Communication:
         if cb_tuple not in self._subscriptions:
             self._subscriptions.add(cb_tuple)
             self.client.subscribe(topic)
+
+    @staticmethod
+    def is_subscription(sub, msg):
+        sub = sub.split("/")
+        msg = msg.split("/")
+        # if the subscription topic is longer than the actual message topic, it ain't never gonna work
+        if len(sub) > len(msg):
+            return False
+
+        for i, part in enumerate(msg):
+            # catch all wildcard
+            if sub[i] == "#":
+                return True
+            # one level wildcard or exact match
+            elif sub[i] == "+" or sub[i] == part:
+                continue
+            else:
+                return False
+        return True

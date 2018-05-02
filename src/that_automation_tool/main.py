@@ -42,7 +42,7 @@ if __name__ == "__main__":
         if DEBUGGING:
             # register debug handler
             def dbg_cb(client, userdata, message):
-                logger.debug("topic: %s message: %s", message.topic, str(message.payload))
+                logger.debug("received message -- topic: %s message: %s", message.topic, str(message.payload))
 
             mqtt_handler.register_callback("/sensornetwork/group3/#", dbg_cb)
 
