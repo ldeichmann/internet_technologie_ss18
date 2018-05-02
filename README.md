@@ -19,3 +19,14 @@ A sample configuration is provided in sample_config.ini
 
 ### Running
 After a successful installation the library may be run using `python3 -m that_automation_tool.main -c /path/to/config`.
+
+### Running docker image
+After building the image, the container may be run with
+`docker run --volume="/path/to/your/config.ini:/etc/tat_config.ini" --volume="</serial/device>:</config/path/to/serial/device?" --privileged <image id>`
+#### Explanations
+1. The Dockerfile expects the configuration to be at /etc/tat_config.ini,
+so we're mounting it as a volume there
+2. The real serial port is mapped to the path you've specified in your configuration.
+If you're not using LDR in your Configuration, it may be left out.
+3. `--privileged` is necessary to access the Raspberry Pis GPIO Pins
+4. `<image id>` is the ID the image received when you built it

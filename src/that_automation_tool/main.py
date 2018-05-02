@@ -9,6 +9,7 @@ from .communication import Communication
 from .ldr_arduino import LDRArduinoHandler
 from .gpio import GPIOHandler
 
+DEBUGGING = True
 
 if __name__ == "__main__":
 
@@ -38,11 +39,12 @@ if __name__ == "__main__":
 
         mqtt_handler.connect_async()
 
-        # register debug handler
-        def dbg_cb(client, userdata, message):
-            logger.debug("topic: %s message: %s", message.topic, str(message.payload))
+        if DEBUGGING:
+            # register debug handler
+            def dbg_cb(client, userdata, message):
+                logger.debug("topic: %s message: %s", message.topic, str(message.payload))
 
-        mqtt_handler.register_callback("/sensornetwork/group3/#", dbg_cb)
+            mqtt_handler.register_callback("/sensornetwork/group3/#", dbg_cb)
 
     gpio_handler = GPIOHandler()
 
@@ -53,4 +55,4 @@ if __name__ == "__main__":
 
     while True:
         time.sleep(5)
-        logger.info("Still alive")
+        logger.debug("Still alive")
