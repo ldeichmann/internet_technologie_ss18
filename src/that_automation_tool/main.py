@@ -13,7 +13,8 @@ DEBUGGING = True
 
 if __name__ == "__main__":
 
-    logging.basicConfig(level=logging.DEBUG)
+    if DEBUGGING:
+        logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
     if platform.machine() == "armv7l":
         logger.info("This is being executed on the raspi")
