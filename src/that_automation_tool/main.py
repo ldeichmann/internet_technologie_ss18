@@ -1,41 +1,56 @@
 import time
 import platform
 import serial
+import configparser
+import argparse
+import logging
 
 from .communication import Communication
+from .ldr_arduino import LDRArduinoHandler
 from .gpio import GPIOHandler
 
 
-led_channel_no = 40
-led2_channel_no = 38
-ldr_channel_no = 37
-
-
 if __name__ == "__main__":
+
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
     if platform.machine() == "armv7l":
-        print("This is being executed on the raspi")
+        logger.info("This is being executed on the raspi")
     else:
-        print("Probably not running on the raspi")
+        logger.warning("Probably not running on the raspi")
+
+    # get configuration path from arguments
+    parser = argparse.ArgumentParser(description="Do some IoT things")
+    parser.add_argument("-c", "--config", help="path to configuration file")
+    args = parser.parse_args()
+
+    # read config file
+    config = configparser.ConfigParser()
+    config.read(args.config)
+
+    mqtt_handler = None
+    if "MQTT" in config.sections():
+        logger.info("Enabling MQTT")
+        mqtt_handler = Communication(config["MQTT"])
+
+        def on_mqtt_message(client, userdata, msg):
+            logger.debug("%s - %s", msg.topic, str(msg.payload))
+
+        mqtt_handler.connect_async()
+
+        # register debug handler
+        def dbg_cb(client, userdata, message):
+            logger.debug("topic: %s message: %s", message.topic, str(message.payload))
+
+        mqtt_handler.register_callback("/sensornetwork/group3/#", dbg_cb)
+
     gpio_handler = GPIOHandler()
-    gpio_handler.set_output(led_channel_no)
-    gpio_handler.set_output(led2_channel_no)
-    gpio_handler.set_input(ldr_channel_no)
 
-    ser = serial.Serial('/dev/ttyACM0')  # open serial port
-
-
-    def ldr_on_cb():
-        gpio_handler.turn_on(led_channel_no)
-        gpio_handler.turn_off(led2_channel_no)
-
-    def ldr_off_cb():
-        gpio_handler.turn_off(led_channel_no)
-        gpio_handler.turn_on(led2_channel_no)
-
+    if "LDR" in config.sections():
+        logger.info("Enabling LDR")
+        ldr_arduino_handler = LDRArduinoHandler(gpio=gpio_handler, config=config["LDR"], mqtt=mqtt_handler)
+        ldr_arduino_handler.run_async()
 
     while True:
-        lux_value = int(ser.readline())
-        if lux_value < 50:
-            ldr_on_cb()
-        else:
-            ldr_off_cb()
+        time.sleep(5)
+        logger.info("Still alive")
