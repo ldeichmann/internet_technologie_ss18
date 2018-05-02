@@ -9,6 +9,7 @@ class LDRArduinoHandler:
         self.serial = serial.Serial(config['serial_port'])
         self._mqtt = mqtt
         self._led_pin = config.getint('led_pin')
+        self._ldr_threshold = config.getint('brightness_threshold', 50)
         self._gpio = gpio
         self._gpio.set_output(self._led_pin)
         self.thread = None
