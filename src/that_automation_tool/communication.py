@@ -40,12 +40,11 @@ class Communication:
     def _connect(self):
         self.client.connect(host=self._config["hostname"], port=self._config.getint("port"))
         while True:
-            self.client.loop_forever()
-            # try:
-            #     self.client.loop_forever()
-            # except Exception as e:
-            #     self._logger.error("MQTT connection broken, reconnecting")
-            #     self._logger.error(e)
+            try:
+                self.client.loop_forever()
+            except Exception as e:
+                self._logger.error("MQTT connection broken, reconnecting")
+                self._logger.error(e)
 
     def _on_message_cb(self, client, userdata, msg):
         # pass on to every callback fitting
