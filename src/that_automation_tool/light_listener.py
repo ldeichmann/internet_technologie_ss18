@@ -19,6 +19,17 @@ class LightListener:
 
         self._recent_values = PriorityQueue(maxsize=self._size)
 
+    def _add_message(self, msg, formatted_message):
+        if self._recent_values.qsize() == self._recent_values.maxsize:
+            if self._recent_values.queue[0][0] < msg.timestamp:
+                # remove "lowest" value
+                val = self._recent_values.get()
+                self._logger.debug("Removed oldest element from queue, element was: %s", val)
+            else:
+                return
+
+        self._recent_values.put((msg.timestamp, formatted_message))
+
     def message_callback(self, client, userdata, msg):
         try:
             fmsg = json.loads(msg.payload)
@@ -26,12 +37,7 @@ class LightListener:
             if "value" not in fmsg:
                 raise Exception("value missing from message")
 
-            if self._recent_values.qsize() == self._recent_values.maxsize:
-                # remove "lowest" value
-                val = self._recent_values.get()
-                self._logger.debug("Removed oldest element from queue, element was: %s", val)
-
-            self._recent_values.put((msg.timestamp, fmsg))
+            self._add_message(msg, fmsg)
 
             # our values might've changed, inform the user about the new average
             self._print_average()
