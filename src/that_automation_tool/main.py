@@ -7,6 +7,7 @@ import logging
 from .communication import Communication
 from .ldr_arduino import LDRArduinoHandler
 from .gpio import GPIOHandler
+from .light_listener import LightListener
 
 DEBUGGING = True
 
@@ -52,6 +53,14 @@ if __name__ == "__main__":
         logger.info("Enabling LDR")
         ldr_arduino_handler = LDRArduinoHandler(gpio=gpio_handler, config=config["LDR"], mqtt=mqtt_handler)
         ldr_arduino_handler.run_async()
+
+    if "LightCalculator"  in config.sections():
+        if not mqtt_handler:
+            logger.error("LightCalculator enabled but no mqtt handler available")
+        else:
+            logger.info("Enabling MQTT Light average calculator")
+            light_avg = LightListener(mqtt_handler=mqtt_handler, config=config["LightCalculator"])
+            light_avg.run()
 
     while True:
         time.sleep(5)
