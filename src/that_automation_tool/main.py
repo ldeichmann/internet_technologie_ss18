@@ -54,7 +54,7 @@ if __name__ == "__main__":
         ldr_arduino_handler = LDRArduinoHandler(gpio=gpio_handler, config=config["LDR"], mqtt=mqtt_handler)
         ldr_arduino_handler.run_async()
 
-    if "LightCalculator"  in config.sections():
+    if "LightCalculator" in config.sections():
         if not mqtt_handler:
             logger.error("LightCalculator enabled but no mqtt handler available")
         else:

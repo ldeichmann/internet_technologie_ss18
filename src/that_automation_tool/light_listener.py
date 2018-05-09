@@ -1,7 +1,8 @@
 import logging
-import collections
+from queue import PriorityQueue
 import json
 import datetime
+import time
 
 
 class LightListener:
@@ -16,22 +17,21 @@ class LightListener:
         self._mqtt = mqtt_handler
         self._size = config.getint("num_msg", 20)
 
-        self._recent_values = {}
-
-    def _add_group_value(self, group, value):
-        if group not in self._recent_values:
-            self._recent_values[group] = collections.deque(maxlen=self._size)
-        self._recent_values[group].append(value)
+        self._recent_values = PriorityQueue(maxsize=self._size)
 
     def message_callback(self, client, userdata, msg):
         try:
             fmsg = json.loads(msg.payload)
             self._logger.debug("%s: %s", datetime.datetime.fromtimestamp(fmsg['timestamp']).strftime('%H:%M:%S'), fmsg)
-            if "measurement_value" not in fmsg:
-                raise Exception("measurement_value missing from message")
+            if "value" not in fmsg:
+                raise Exception("value missing from message")
 
-            grp = msg.topic.split("/")[1]
-            self._add_group_value(group=grp, value=fmsg)
+            if self._recent_values.qsize() == self._recent_values.maxsize:
+                # remove "lowest" value
+                val = self._recent_values.get()
+                self._logger.debug("Removed oldest element from queue, element was: %s", val)
+
+            self._recent_values.put((msg.timestamp, fmsg))
 
             # our values might've changed, inform the user about the new average
             self._print_average()
@@ -40,11 +40,13 @@ class LightListener:
             self._logger.error(e)
 
     def _print_average(self):
-        for grp, values in self._recent_values.items():
+        if self._recent_values.qsize():
             total = 0
-            for val in self._recent_values:
-                total += val["measurement_value"]
-            self._logger.info("%s: Average measurement value is: %s", grp, total / len(self._recent_values))
+            # create a copy of all values here to allow simple iteration
+            for timestamp, value in list(self._recent_values.queue):
+                total += value["value"]
+            self._logger.info("Average measurement value is: %s", total / self._recent_values.qsize())
+            self._logger.debug("Queue for average was: %s", list(self._recent_values.queue))
 
     def run(self):
         self._mqtt.register_callback("/sensornetwork/+/sensor/brightness", self.message_callback)

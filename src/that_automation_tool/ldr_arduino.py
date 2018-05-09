@@ -1,11 +1,13 @@
 import threading
+import logging
+
 import serial
 
 
 class LDRArduinoHandler:
 
     def __init__(self, gpio, config, mqtt=None):
-
+        self._logger = logging.getLogger(__name__)
         self.serial = serial.Serial(config['serial_port'])
         self._mqtt = mqtt
         self._led_pin = config.getint('led_pin')
@@ -30,11 +32,15 @@ class LDRArduinoHandler:
 
     def _run(self):
         while True:
-            lux_value = int(self.serial.readline())
-            if self._mqtt:
-                self._mqtt.publish('/sensornetwork/group3/sensor/brightness', {"value": lux_value,
-                                                                               "measurement_unit": "Lux"}, qos=2)
-            if lux_value < self._ldr_threshold:
-                self.ldr_high()
-            else:
-                self.ldr_low()
+            try:
+                lux_value = int(self.serial.readline())
+                if self._mqtt:
+                    self._mqtt.publish('/sensornetwork/group3/sensor/brightness', {"value": lux_value,
+                                                                                   "measurement_unit": "Lux"}, qos=2)
+                if lux_value < self._ldr_threshold:
+                    self.ldr_high()
+                else:
+                    self.ldr_low()
+            except ValueError as e:
+                self._logger.error("Malformed serial input received.")
+                self._logger.error(e)
