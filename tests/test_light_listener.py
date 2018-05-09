@@ -27,7 +27,9 @@ class LightListenerTest(unittest.TestCase):
 
         # initialize with some values
         listener._add_message(msg3, None)
+        self.assertEqual(listener._recent_values.qsize(), 1)
         listener._add_message(msg2, None)
+        self.assertEqual(listener._recent_values.qsize(), 2)
         listener._add_message(msg1, None)
 
         # make sure queue is filled as expected
@@ -37,27 +39,33 @@ class LightListenerTest(unittest.TestCase):
 
         # make sure oldest entry gets dropped
         listener._add_message(msg4, None)
+        self.assertEqual(listener._recent_values.qsize(), 3)
         self.assertEqual(listener._recent_values.queue[0], (msg2.timestamp, None),
                          "Oldest message isn't first element in queue")
 
         # make sure an old entry doesn't drop a new one
         listener._add_message(msg1, None)
+        self.assertEqual(listener._recent_values.qsize(), 3)
         self.assertEqual(listener._recent_values.queue[0], (msg2.timestamp, None),
                          "Oldest message isn't first element in queue")
 
         # now test an element between min and max
         listener._add_message(msg6, None)
+        self.assertEqual(listener._recent_values.qsize(), 3)
         self.assertEqual(listener._recent_values.queue[0], (msg3.timestamp, None),
                          "Oldest message isn't first element in queue")
         listener._add_message(msg5, None)
+        self.assertEqual(listener._recent_values.qsize(), 3)
         self.assertEqual(listener._recent_values.queue[0], (msg4.timestamp, None),
                          "Oldest message isn't first element in queue")
 
         # rotate all messages older than 6 out of the queue
         listener._add_message(msg6, None)
+        self.assertEqual(listener._recent_values.qsize(), 3)
         self.assertEqual(listener._recent_values.queue[0], (msg5.timestamp, None),
                          "Oldest message isn't first element in queue")
         listener._add_message(msg6, None)
+        self.assertEqual(listener._recent_values.qsize(), 3)
         self.assertEqual(listener._recent_values.queue[0], (msg6.timestamp, None),
                          "Oldest message isn't first element in queue")
         self.assertListEqual(list(listener._recent_values.queue),
