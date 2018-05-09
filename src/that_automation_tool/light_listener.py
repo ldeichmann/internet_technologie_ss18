@@ -45,7 +45,7 @@ class LightListener:
             # create a copy of all values here to allow simple iteration
             for timestamp, value in list(self._recent_values.queue):
                 total += value["value"]
-            self._logger.info("Average measurement value is: %s", total / self._recent_values.qsize())
+            self._logger.info("Average measurement value is: %.2f", total / self._recent_values.qsize())
             self._logger.debug("Queue for average was: %s", list(self._recent_values.queue))
 
     def run(self):
