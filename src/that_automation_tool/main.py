@@ -9,12 +9,14 @@ from .ldr_arduino import LDRArduinoHandler
 from .gpio import GPIOHandler
 from .light_listener import LightListener
 
-DEBUGGING = True
+DEBUGGING = False
 
 if __name__ == "__main__":
 
     if DEBUGGING:
         logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
     if platform.machine() == "armv7l":
         logger.info("This is being executed on the raspi")
