@@ -57,13 +57,14 @@ class Communication:
         for topic, func in self._subscriptions:
             self.client.subscribe(topic)
 
-    def publish(self, topic, message):
+    def publish(self, topic, message, qos=0):
         """
         Publish a message to the topic.
         :param str topic:
         :param message: dict-like object or string, must be json serializable
+        :param int qos: quality of service for message
         """
-        self._logger.debug("Publishing topic: %s message: %s", topic, message)
+        self._logger.debug("Publishing topic: %s message: %s qos: %s", topic, message, qos)
         try:
             # received a dict-like object
             message["timestamp"] = time.time()
@@ -71,7 +72,7 @@ class Communication:
             # we got a string or something
             message = {"message": message, "timestamp": time.time()}
         self._logger.debug("Message formatted to %s", message)
-        self.client.publish(topic=topic, payload=json.dumps(message))
+        self.client.publish(topic=topic, payload=json.dumps(message), qos=qos)
 
     def register_callback(self, topic, callback):
         cb_tuple = (topic, callback)
