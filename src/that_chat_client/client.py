@@ -36,6 +36,8 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", help="path to configuration file")
     args = parser.parse_args()
 
+    if not args.config:
+        raise Exception("Configuration parameter missing")
     cfg_pth = os.path.abspath(args.config)
     logger.debug("Configuration path is %s", cfg_pth)
 
@@ -49,12 +51,15 @@ if __name__ == "__main__":
     mqtt_handler = Communication(config["MQTT"])
     mqtt_handler.register_callback("/chat/#", on_message)
 
+    # set will to say goodbye to our friends
+    mqtt_handler.will = ("/chat/group3", json.dumps({"event": "connection_lost"}), 2, False)
+
 
     def threaded_thing():
         while True:
             msg = input()
             # since we're group 3, this value is hardcoded
-            mqtt_handler.publish("/chat/group3", msg)
+            mqtt_handler.publish("/chat/group3", msg, qos=2)
 
 
     thrd = threading.Thread(target=threaded_thing)

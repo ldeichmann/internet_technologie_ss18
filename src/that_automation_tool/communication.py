@@ -2,6 +2,7 @@ import logging
 import time
 import json
 import threading
+from collections import namedtuple
 
 import paho.mqtt.client as mqtt
 
@@ -18,6 +19,7 @@ class Communication:
         self.client.on_connect = self._on_connect_cb
 
         self._subscriptions = set()
+        self._will = None
 
         self._thread = None
         self._lock = threading.Lock()
@@ -56,29 +58,46 @@ class Communication:
         # resubscribe to all topics when reconnecting
         for topic, func in self._subscriptions:
             self.client.subscribe(topic)
+        # set last will
+        if self.will:
+            self.client.will_set(*self.will)
 
-    def publish(self, topic, message, qos=0):
+    def publish(self, topic, message, qos=0, retain=False):
         """
         Publish a message to the topic.
         :param str topic:
         :param message: dict-like object or string, must be json serializable
         :param int qos: quality of service for message
+        :param bool retain: retain messages on broker
         """
-        self._logger.debug("Publishing topic: %s message: %s qos: %s", topic, message, qos)
+        self._logger.debug("Publishing topic: %s message: %s qos: %s retain: %s", topic, message, qos, retain)
         try:
             # received a dict-like object
             message["timestamp"] = time.time()
-        except TypeError as ex:
+        except TypeError:
             # we got a string or something
             message = {"message": message, "timestamp": time.time()}
         self._logger.debug("Message formatted to %s", message)
-        self.client.publish(topic=topic, payload=json.dumps(message), qos=qos)
+        self.client.publish(topic=topic, payload=json.dumps(message), qos=qos, retain=retain)
 
     def register_callback(self, topic, callback):
         cb_tuple = (topic, callback)
         if cb_tuple not in self._subscriptions:
             self._subscriptions.add(cb_tuple)
             self.client.subscribe(topic)
+
+    @property
+    def will(self):
+        return self._will
+
+    @will.setter
+    def will(self, value):
+        """
+        Set value as our will
+        :param value: Tuple[str, str, int, bool] where [topic, payload, qos, retain]
+        """
+        self._will = value
+        self.client.will_set(*value)
 
     @staticmethod
     def is_subscription(sub, msg):
