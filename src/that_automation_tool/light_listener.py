@@ -33,12 +33,16 @@ class LightListener:
     def message_callback(self, client, userdata, msg):
         try:
             fmsg = json.loads(msg.payload)
-            # ensure values in messages are floats
-            fmsg["value"] = float(fmsg["value"])
-            self._logger.debug("%s: %s", datetime.datetime.fromtimestamp(fmsg['timestamp']).strftime('%H:%M:%S'), fmsg)
+
             if "value" not in fmsg:
                 raise Exception("value missing from message")
 
+            # ensure values in messages are floats
+            fmsg["value"] = float(fmsg["value"])
+            try:
+                self._logger.debug("%s: %s", datetime.datetime.fromtimestamp(fmsg['timestamp']).strftime('%H:%M:%S'), fmsg)
+            except KeyError:
+                self._logger.debug("%s localtime: %s", datetime.datetime.fromtimestamp(time.time()).strftime('%H:%M:%S'), fmsg)
             self._add_message(msg, fmsg)
 
             # our values might've changed, inform the user about the new average
