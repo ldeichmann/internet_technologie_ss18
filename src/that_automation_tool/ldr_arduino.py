@@ -36,7 +36,7 @@ class LDRArduinoHandler:
                 lux_value = int(self.serial.readline())
                 if self._mqtt:
                     self._mqtt.publish(
-                        '/sensornetwork/group3/sensor/brightness',
+                        '/sensornetwork/3/sensor/brightness',
                         {"value": lux_value, "measurement_unit": "Lux"},
                         qos=2, retain=True
                     )

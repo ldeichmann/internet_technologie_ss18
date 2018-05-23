@@ -52,14 +52,14 @@ if __name__ == "__main__":
     mqtt_handler.register_callback("/chat/#", on_message)
 
     # set will to say goodbye to our friends
-    mqtt_handler.will = ("/chat/group3", json.dumps({"event": "connection_lost"}), 2, False)
+    mqtt_handler.will = ("/chat/3", json.dumps({"event": "connection_lost"}), 2, False)
 
 
     def threaded_thing():
         while True:
             msg = input()
             # since we're group 3, this value is hardcoded
-            mqtt_handler.publish("/chat/group3", msg, qos=2)
+            mqtt_handler.publish("/chat/3", msg, qos=2)
 
 
     thrd = threading.Thread(target=threaded_thing)

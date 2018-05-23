@@ -47,7 +47,7 @@ if __name__ == "__main__":
             def dbg_cb(client, userdata, message):
                 logger.debug("received message -- topic: %s message: %s", message.topic, str(message.payload))
 
-            mqtt_handler.register_callback("/sensornetwork/group3/#", dbg_cb)
+            mqtt_handler.register_callback("/sensornetwork/3/#", dbg_cb)
 
     gpio_handler = GPIOHandler()
 
