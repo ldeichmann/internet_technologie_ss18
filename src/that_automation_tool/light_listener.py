@@ -33,6 +33,8 @@ class LightListener:
     def message_callback(self, client, userdata, msg):
         try:
             fmsg = json.loads(msg.payload)
+            # ensure values in messages are floats
+            fmsg["value"] = float(fmsg["value"])
             self._logger.debug("%s: %s", datetime.datetime.fromtimestamp(fmsg['timestamp']).strftime('%H:%M:%S'), fmsg)
             if "value" not in fmsg:
                 raise Exception("value missing from message")
