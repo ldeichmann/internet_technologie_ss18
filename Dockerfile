@@ -10,4 +10,4 @@ RUN ls /pack
 
 RUN cd /pack && pip install .
 
-CMD [ "python3", "-m", "that_automation_tool.main" ]
+CMD [ "python3", "-m", "that_automation_tool.main", "-c", "/etc/tat_config.ini"]

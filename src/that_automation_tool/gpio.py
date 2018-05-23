@@ -1,3 +1,5 @@
+import logging
+
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD)
 
@@ -17,6 +19,9 @@ class _GPIOCallback:
 
 class GPIOHandler:
 
+    def __init__(self):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     @staticmethod
     def enable_callback(channel):
         GPIO.add_event_detect(channel, GPIO.BOTH)
@@ -25,18 +30,18 @@ class GPIOHandler:
     def register_callback(channel, callback):
         GPIO.add_event_callback(channel, _GPIOCallback(callback))
 
-    @staticmethod
-    def set_input(channel):
+    def set_input(self, channel):
+        self._logger.debug("Setting pin %s to input" % channel)
         GPIO.setup(channel, GPIO.IN)
 
-    @staticmethod
-    def set_output(channel):
+    def set_output(self, channel):
+        self._logger.debug("Setting pin %s to output" % channel)
         GPIO.setup(channel, GPIO.OUT)
 
-    @staticmethod
-    def turn_on(channel):
+    def turn_on(self, channel):
+        self._logger.debug("Turning on output on Pin %s" % channel)
         GPIO.output(channel, 1)
 
-    @staticmethod
-    def turn_off(channel):
+    def turn_off(self, channel):
+        self._logger.debug("Turning off output on Pin %s" % channel)
         GPIO.output(channel, 0)

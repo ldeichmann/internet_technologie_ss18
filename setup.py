@@ -122,7 +122,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    package_dir={'':'src'},
+    package_dir={'': 'src'},
     packages=find_packages('src', exclude=['contrib', 'docs', 'tests']),  # Required
 
     # This field lists other packages that your project depends on to run.
