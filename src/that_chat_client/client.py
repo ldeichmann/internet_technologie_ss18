@@ -69,4 +69,4 @@ if __name__ == "__main__":
     mqtt_handler.connect_async()
     while True:
         # since our handler doesn't have a blocking run, we'll do it ourselves
-        pass
+        time.sleep(2000)
